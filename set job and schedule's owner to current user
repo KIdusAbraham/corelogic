@@ -1,0 +1,41 @@
+--set job and schedule's owner to current user
+DECLARE @sid [VARBINARY](85) = SUSER_SID();
+DECLARE @jobname [sysname] = 'JobName';
+
+UPDATE msdb .dbo.sysjobs SET owner_sid = @sid WHERE [name] = @jobname;
+
+UPDATE
+	ss
+SET
+	[owner_sid] = @sid
+FROM
+	msdb.dbo.sysjobs					sj
+	INNER JOIN msdb.dbo.sysjobschedules sjs
+		ON sj.[job_id]	   = sjs.[job_id]
+
+	INNER JOIN msdb.dbo.sysschedules	ss
+		ON sjs.schedule_id = ss.[schedule_id]
+WHERE
+	[sj].[name] = @jobname;
+
+
+
+
+--set job schedule's owner back to 'sa'
+DECLARE @sid [VARBINARY](85) = SUSER_SID('sa');
+DECLARE @jobname [sysname] = 'JobName';
+UPDATE msdb .dbo.sysjobs SET owner_sid = @sid WHERE [name] = @jobname;
+
+UPDATE
+	ss
+SET
+	[owner_sid] = @sid
+FROM
+	msdb.dbo.sysjobs					sj
+	INNER JOIN msdb.dbo.sysjobschedules sjs
+		ON sj.[job_id]	   = sjs.[job_id]
+
+	INNER JOIN msdb.dbo.sysschedules	ss
+		ON sjs.schedule_id = ss.[schedule_id]
+WHERE
+	[sj].[name] = @jobname;
